@@ -1,4 +1,4 @@
-package me.yuanbin.kafka.connect.redis.sink;
+package me.yuanbin.kafka.connect.redis;
 
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.connect.sink.SinkRecord;
@@ -9,7 +9,7 @@ import java.util.Collection;
  * @author billryan
  * @date 2019-06-22
  */
-public interface RedisSinkClient {
+public interface RedisClient {
 
     /**
      * put SinkRecord
@@ -22,11 +22,4 @@ public interface RedisSinkClient {
      * shut down the client.
      */
     void stop();
-
-    /**
-     * set connector config
-     *
-     * @param connectorConfig connector config
-     */
-    void setConnectorConfig(AbstractConfig connectorConfig);
 }

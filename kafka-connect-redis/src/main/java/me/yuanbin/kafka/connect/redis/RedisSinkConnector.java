@@ -7,13 +7,21 @@ import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkConnector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author billryan
+ * @date 2019-06-22
+ */
 public class RedisSinkConnector extends SinkConnector {
+
+    private static final Logger log = LoggerFactory.getLogger(RedisSinkConnector.class);
 
     private Map<String, String> configProperties;
 
@@ -43,6 +51,7 @@ public class RedisSinkConnector extends SinkConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
+        log.info("Setting task configurations for {} workers.", maxTasks);
         List<Map<String, String>> taskConfigs = new ArrayList<>();
         Map<String, String> config = new HashMap<>(configProperties);
         for (int i = 0; i < maxTasks; i++) {
