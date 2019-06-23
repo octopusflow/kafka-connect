@@ -4,7 +4,7 @@ LABEL maintainer="yuanbin2014@gmail.com"
 
 WORKDIR /opt/kafka
 
-COPY connectors/ /opt/connectors/
+COPY */target/kafka-connect*.jar /opt/connectors/
 COPY connect-distributed.properties config/
 
 ENV KAFKA_OPTS="-XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=70.0" KAFKA_HEAP_OPTS=" " APP_PROFILES_ACTIVE="dev"

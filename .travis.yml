@@ -1,5 +1,11 @@
 
 language: java
 
+services:
+  - docker
+
 script:
   - mvn clean package
+
+after_script:
+  docker build -t billryan/kafka-connect:latest .
