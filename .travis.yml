@@ -4,8 +4,12 @@ language: java
 services:
   - docker
 
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
 script:
   - mvn clean package
 
 after_script:
   docker build -t billryan/kafka-connect:latest .
+  docker push billryan/kafka-connect:latest
