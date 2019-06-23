@@ -7,10 +7,11 @@
     <groupId>me.yuanbin.kafka</groupId>
     <artifactId>kafka-connect</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>kafka-connect-elasticsearch</module>
         <module>kafka-connect-redis</module>
+        <module>kafka-connect-protocol</module>
     </modules>
 
     <properties>
@@ -20,10 +21,17 @@
         <slf4j.version>1.7.25</slf4j.version>
         <junit.version>4.12</junit.version>
         <redisson.version>3.10.2</redisson.version>
+        <kafka.connect.protocol.version>1.0.0-SNAPSHOT</kafka.connect.protocol.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>me.yuanbin.kafka</groupId>
+                <artifactId>kafka-connect-protocol</artifactId>
+                <version>${kafka.connect.protocol.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>connect-api</artifactId>
@@ -31,9 +39,15 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>connect-json</artifactId>
+                <version>${kafka.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>${kafka.version}</version>
+                <version>${slf4j.version}</version>
             </dependency>
 
             <dependency>

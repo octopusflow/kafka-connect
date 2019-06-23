@@ -1,6 +1,5 @@
 package me.yuanbin.kafka.connect.redis;
 
-import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 import java.util.Collection;

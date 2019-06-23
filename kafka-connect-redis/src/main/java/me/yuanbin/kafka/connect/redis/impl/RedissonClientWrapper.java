@@ -1,19 +1,15 @@
 package me.yuanbin.kafka.connect.redis.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.yuanbin.kafka.connect.redis.RedisClient;
 import me.yuanbin.kafka.connect.redis.sink.RedisSinkConnectorConfig;
-import me.yuanbin.kafka.connect.redis.util.DataConverter.BehaviorOnNullValues;
-import org.apache.kafka.common.config.AbstractConfig;
+import me.yuanbin.kafka.connect.protocol.util.DataConverter.BehaviorOnNullValues;
 import org.apache.kafka.common.config.types.Password;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.client.codec.Codec;
-import org.redisson.client.codec.LongCodec;
 import org.redisson.config.Config;
 import org.redisson.config.SingleServerConfig;
 import org.slf4j.Logger;
@@ -22,10 +18,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-import static org.redisson.api.RType.LIST;
-import static org.redisson.api.RType.SET;
-import static org.redisson.api.RType.ZSET;
-import static org.redisson.api.RType.MAP;
+import static me.yuanbin.kafka.connect.protocol.constant.redis.RedisCommandType.UNDEFINED;
+import static me.yuanbin.kafka.connect.protocol.constant.redis.RedisCommandType.DELETE;
+import static me.yuanbin.kafka.connect.protocol.constant.KafkaKey.ID;
+import static me.yuanbin.kafka.connect.protocol.constant.KafkaValue.COMMAND_TYPE;
+import static me.yuanbin.kafka.connect.protocol.constant.redis.RedisDataType.OBJECT;
+import static me.yuanbin.kafka.connect.protocol.constant.redis.RedisKafkaKey.DATABASE;
+import static me.yuanbin.kafka.connect.protocol.constant.redis.RedisKafkaValue.DATA_TYPE;
+import static me.yuanbin.kafka.connect.protocol.util.DataConverter.convertKey;
+import static me.yuanbin.kafka.connect.protocol.util.DataConverter.convertValue;
 
 /**
  * @author billryan
@@ -92,7 +93,10 @@ public class RedissonClientWrapper implements RedisClient {
     @Override
     public void put(Collection<SinkRecord> records) {
         for (SinkRecord record : records) {
-            if (record.value() == null) continue;
+            if (record == null) {
+                log.error("record is null!!!");
+                continue;
+            }
             log.debug(
                     "record keySchema {}, key {}, valueSchema {}, value {}",
                     record.keySchema(),
@@ -100,61 +104,40 @@ public class RedissonClientWrapper implements RedisClient {
                     record.valueSchema(),
                     record.value());
 
-            String rawKey = convertKey(record);
-            String key = rawKey;
-            long expiredAt = -1;
-            JsonNode rootValue = convertValue(record);
+            JsonNode keyNode = convertKey(record);
 
-        }
-    }
-
-    private String convertKey(SinkRecord record) {
-        if (record.key() == null) return null;
-        String key = null;
-        Schema keySchema = record.keySchema();
-        if (keySchema != null) {
-            switch (keySchema.type()) {
-                case STRING:
-                    key = (String) record.key();
-                    break;
-                case BYTES:
-                    key = new String((byte[])record.key());
-                    break;
-                default:
-                    key = record.key().toString();
+            String redisKey = keyNode == null ? null : keyNode.get(ID).asText();
+            if (redisKey == null || redisKey.isEmpty()) {
+                log.error("redis key is null!!!");
+                log.error(record.toString());
+                continue;
             }
-        } else {
-            key = record.key().toString();
-        }
+            int database = keyNode.get(DATABASE).asInt();
 
-        return key;
-    }
-
-    private JsonNode convertValue(SinkRecord record) {
-        JsonNode rootValue = null;
-        try {
-            Schema valueSchema = record.valueSchema();
-            if (valueSchema != null) {
-                switch (valueSchema.type()) {
-                    case STRING:
-                        rootValue = mapper.readTree((String) record.value());
+            JsonNode valueNode = convertValue(record);
+            final String commandType;
+            if (valueNode == null) {
+                switch (behaviorOnNullValues) {
+                    case IGNORE:
+                        continue;
+                    case DELETE:
+                        commandType = DELETE;
                         break;
-                    case BYTES:
-                        rootValue = mapper.readTree((byte[]) record.value());
-                        break;
+                    case FAIL:
+                        // TODO
                     default:
-                        rootValue = mapper.readTree(record.value().toString());
+                        continue;
                 }
             } else {
-                rootValue = mapper.readTree(record.value().toString());
+                commandType = valueNode.has(COMMAND_TYPE) ? valueNode.get(COMMAND_TYPE).asText(UNDEFINED) : UNDEFINED;
             }
-        } catch (IOException ex) {
-            log.error(ex.getMessage());
+            if (commandType.equals(DELETE)) {
+                client.getKeys().delete(redisKey);
+                continue;
+            }
+            String dataType = valueNode.has(DATA_TYPE) ? valueNode.get(DATA_TYPE).asText(OBJECT) : OBJECT;
         }
-
-        return rootValue;
     }
-
 
     @Override
     public void stop() {

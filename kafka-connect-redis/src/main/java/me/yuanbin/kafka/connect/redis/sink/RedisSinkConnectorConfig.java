@@ -1,6 +1,6 @@
 package me.yuanbin.kafka.connect.redis.sink;
 
-import me.yuanbin.kafka.connect.redis.util.DataConverter;
+import me.yuanbin.kafka.connect.protocol.util.DataConverter;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 
@@ -58,6 +58,7 @@ public class RedisSinkConnectorConfig extends AbstractConfig {
                 ).define(
                         DATABASE_CONFIG,
                         ConfigDef.Type.INT,
+                        0,
                         ConfigDef.Importance.HIGH,
                         DATABASE_DOC,
                         group,
