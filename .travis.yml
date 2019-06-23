@@ -5,13 +5,14 @@ services:
   - docker
 
 before_install:
+  - export GIT_SHORT_COMMIT="$(git rev-parse --short ${TRAVIS_COMMIT})"
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
 script:
   - mvn clean package
 
 after_script:
-  - docker build -t billryan/kafka-connect:${TRAVIS_COMMIT} .
-  - docker tag billryan/kafka-connect:${TRAVIS_COMMIT} billryan/kafka-connect:latest
-  - docker push billryan/kafka-connect:${TRAVIS_COMMIT}
+  - docker build -t billryan/kafka-connect:${GIT_SHORT_COMMIT} .
+  - docker tag billryan/kafka-connect:${GIT_SHORT_COMMIT} billryan/kafka-connect:latest
+  - docker push billryan/kafka-connect:${GIT_SHORT_COMMIT}
   - docker push billryan/kafka-connect:latest
