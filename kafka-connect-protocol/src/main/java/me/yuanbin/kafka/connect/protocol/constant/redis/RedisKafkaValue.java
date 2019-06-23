@@ -16,4 +16,7 @@ public interface RedisKafkaValue extends KafkaValue {
      * data type
      */
     String DATA_TYPE = "data_type";
+
+    String DATA_SCORE = "score";
+    String DATA_OBJECT = "object";
 }
