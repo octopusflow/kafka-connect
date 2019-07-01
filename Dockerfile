@@ -13,4 +13,4 @@ EXPOSE 8083
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD sed -i "s/BOOTSTRAP_SERVERS/$BOOTSTRAP_SERVERS/g"  bin/connect-distributed.sh config/connect-distributed.properties
+CMD sed -i "s/BOOTSTRAP_SERVERS/$BOOTSTRAP_SERVERS/g" config/connect-distributed.properties && bin/connect-distributed.sh config/connect-distributed.properties
