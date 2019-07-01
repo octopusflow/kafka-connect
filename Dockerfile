@@ -11,8 +11,6 @@ ENV KAFKA_OPTS="-XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=70.0" KAFKA_H
 
 EXPOSE 8083
 
-HEALTHCHECK --start-period=60s --retries=6
-
 ENTRYPOINT ["/sbin/tini", "--"]
 
 CMD sed -i "s/BOOTSTRAP_SERVERS/$BOOTSTRAP_SERVERS/g" config/connect-distributed.properties && bin/connect-distributed.sh config/connect-distributed.properties
